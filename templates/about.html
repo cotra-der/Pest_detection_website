@@ -1,0 +1,130 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>About - Pest Detection System</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+    <div class="container-fluid px-0">
+        <!-- Header -->
+        <nav class="navbar navbar-expand-lg navbar-dark bg-primary">
+            <div class="container">
+                <a class="navbar-brand" href="/">Pest Detection System</a>
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+                <div class="collapse navbar-collapse" id="navbarNav">
+                    <ul class="navbar-nav ms-auto">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">Home</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link active" aria-current="page" href="/about">About</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="/setup">Setup</a>
+                        </li>
+                    </ul>
+                </div>
+            </div>
+        </nav>
+
+        <header class="bg-primary text-white py-4 mb-4">
+            <div class="container text-center">
+                <h1>About The Project</h1>
+                <p class="lead">Learn how our pest detection system works</p>
+            </div>
+        </header>
+
+        <div class="container">
+            <div class="row">
+                <div class="col-lg-8 mx-auto">
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h2 class="card-title">How It Works</h2>
+                            <p>The Pest Detection System uses advanced machine learning techniques to analyze audio recordings and identify various pest species based on their unique sound signatures.</p>
+                            
+                            <h3>Key Features</h3>
+                            <ul>
+                                <li><strong>Real-time Audio Analysis:</strong> Process and analyze audio files in real-time</li>
+                                <li><strong>Multi-species Detection:</strong> Identify multiple pest species including Caribbean fruit fly, fire ants, termites, and various beetles</li>
+                                <li><strong>Detailed Information:</strong> Comprehensive details about each detected pest</li>
+                                <li><strong>Visualizations:</strong> Audio waveform and spectrogram displays</li>
+                                <li><strong>Advanced Analysis:</strong> Frequency analysis and confidence scoring</li>
+                            </ul>
+                            
+                            <h3>Technical Details</h3>
+                            <p>The system uses a convolutional neural network (CNN) trained on a dataset of pest sounds. Audio is processed as follows:</p>
+                            <ol>
+                                <li>Audio is captured at 16kHz sample rate</li>
+                                <li>Recordings are converted to mel-spectrograms</li>
+                                <li>A CNN model analyzes the spectrograms to identify pest species</li>
+                                <li>Multiple predictions are combined for more accurate results</li>
+                                <li>Frequency analysis verifies if dominant frequencies match expected pest ranges</li>
+                            </ol>
+                        </div>
+                    </div>
+
+                    <div class="card mb-4">
+                        <div class="card-body">
+                            <h2 class="card-title">Detected Pest Species</h2>
+                            <p>Our system can detect the following pest species based on their acoustic signatures:</p>
+                            
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ul>
+                                        <li>Asian tiger mosquito</li>
+                                        <li>Caribbean fruit fly</li>
+                                        <li>Fire ants</li>
+                                        <li>Termites</li>
+                                        <li>Asian longhorned beetle</li>
+                                    </ul>
+                                </div>
+                                <div class="col-md-6">
+                                    <ul>
+                                        <li>Black vine weevil</li>
+                                        <li>Mediterranean fruit fly</li>
+                                        <li>Butterfly</li>
+                                        <li>June beetle</li>
+                                        <li>Queensland fruit fly</li>
+                                    </ul>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="card">
+                        <div class="card-body">
+                            <h2 class="card-title">Usage Instructions</h2>
+                            <p>Using the Pest Detection System is simple:</p>
+                            <ol>
+                                <li>Record audio using the built-in recorder or upload a WAV file</li>
+                                <li>Click "Analyze Audio" to process the sound</li>
+                                <li>Review the detection results, including confidence scores and pest information</li>
+                                <li>For best results, record clear audio with minimal background noise</li>
+                            </ol>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Status Bar -->
+        <footer class="bg-primary text-white py-2 mt-4">
+            <div class="container">
+                <div class="row">
+                    <div class="col-md-6">© 2025 Pest Detection System</div>
+                    <div class="col-md-6 text-end">
+                        Based on <a href="https://github.com/cotra-der/Pest-detection-model" class="text-white">Pest-detection-model</a>
+                    </div>
+                </div>
+            </div>
+        </footer>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>

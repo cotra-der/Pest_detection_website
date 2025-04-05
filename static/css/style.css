@@ -1,0 +1,142 @@
+body {
+    font-family: 'Helvetica Neue', Arial, sans-serif;
+    background-color: #ecf0f1;
+    color: #2c3e50;
+}
+
+header {
+    background: linear-gradient(135deg, #1a5276 0%, #3498db 100%) !important;
+}
+
+.navbar {
+    background: linear-gradient(135deg, #1a5276 0%, #3498db 100%) !important;
+}
+
+.btn {
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    transition: all 0.3s ease;
+}
+
+.btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+}
+
+.btn-success {
+    background-color: #2ecc71;
+    border-color: #27ae60;
+}
+
+.btn-danger {
+    background-color: #e74c3c;
+    border-color: #c0392b;
+}
+
+.btn-secondary {
+    background-color: #3498db;
+    border-color: #2980b9;
+}
+
+.card {
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    margin-bottom: 20px;
+}
+
+.card-header {
+    font-weight: bold;
+    padding: 12px 20px;
+}
+
+.visualization-container {
+    height: 200px;
+    background-color: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 4px;
+    margin-bottom: 15px;
+    position: relative;
+}
+
+.results-container {
+    min-height: 200px;
+    max-height: 400px;
+    overflow-y: auto;
+    padding: 15px;
+}
+
+.initial-message {
+    display: flex;
+    height: 100%;
+    min-height: 150px;
+    align-items: center;
+    justify-content: center;
+    color: #6c757d;
+}
+
+.progress {
+    height: 10px;
+    border-radius: 5px;
+}
+
+.detected-pest {
+    color: #2c3e50;
+    margin-bottom: 10px;
+}
+
+footer {
+    background: linear-gradient(135deg, #3498db 0%, #1a5276 100%) !important;
+    position: sticky;
+    bottom: 0;
+}
+
+.recording {
+    animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+    0% { transform: scale(1); }
+    50% { transform: scale(1.05); }
+    100% { transform: scale(1); }
+}
+
+.warning-text {
+    color: #f39c12;
+    font-style: italic;
+}
+
+.alternative-detections {
+    margin-top: 10px;
+}
+
+.alternative-item {
+    margin-bottom: 10px;
+    padding-left: 10px;
+    border-left: 3px solid #3498db;
+}
+
+#spectrogramCanvas {
+    width: 100%;
+    height: 100%;
+}
+
+#recordButton.recording {
+    background-color: #c0392b;
+}
+
+pre {
+    border-radius: 4px;
+    overflow-x: auto;
+}
+
+code {
+    color: #e83e8c;
+}
+
+@media (max-width: 768px) {
+    .btn {
+        margin-bottom: 10px;
+        width: 100%;
+    }
+}
