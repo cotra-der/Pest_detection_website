@@ -1,6 +1,6 @@
 import os
 import sys
-from flask import Flask, request, jsonify, render_template, flash, redirect, url_for
+from flask import Flask, request, jsonify, render_template, url_for
 import numpy as np
 import tensorflow as tf
 import librosa
@@ -254,7 +254,6 @@ def api_predict():
     
     return jsonify({'error': 'Invalid file type'})
 
-# Health check endpoint for Render
 @app.route('/health')
 def health():
     logger.info("Health check endpoint called")
@@ -264,10 +263,9 @@ def health():
     logger.info(f"Environment variables: {env_info}")
     return jsonify({"status": "healthy"})
 
-# Initial model loading
-@app.before_first_request
-def before_first_request():
-    logger.info("Loading model before first request")
+# Load model at startup
+with app.app_context():
+    logger.info("Loading model at startup")
     load_model()
 
 # For local development
