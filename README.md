@@ -28,10 +28,6 @@ A web application that uses audio processing and machine learning to detect and 
 - **User-friendly Interface**: Simple and intuitive web interface for easy interaction
 - **Responsive Design**: Works on both desktop and mobile devices
 
-## 🎬 Demo
-
-[Add screenshots or a link to a live demo when available]
-
 ## 🛠️ Technology Stack
 
 - **Backend**: Flask 2.0.3
