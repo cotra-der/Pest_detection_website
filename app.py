@@ -9,12 +9,12 @@ import logging
 from werkzeug.utils import secure_filename
 import tempfile
 import traceback
+from flask_cors import CORS  # Added for CORS support
 
 # Suppress TensorFlow optimization messages
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '2'
 
-# IMPORTANT: Configure logging to only use stdout (no file handlers)
-# This is the critical fix for the Render deployment
+# Configure logging to only use stdout (no file handlers)
 logging.basicConfig(
     level=logging.INFO,
     format='%(asctime)s - %(name)s - %(levelname)s - %(message)s',
@@ -24,6 +24,12 @@ logging.basicConfig(
 )
 logger = logging.getLogger(__name__)
 logger.info("Starting application with stdout logging")
+
+# Create necessary directories
+os.makedirs(os.path.join(os.getcwd(), 'static'), exist_ok=True)
+os.makedirs(os.path.join(os.getcwd(), 'static', 'uploads'), exist_ok=True)
+os.makedirs(os.path.join(os.getcwd(), 'models'), exist_ok=True)
+logger.info(f"Created necessary directories")
 
 # Configure TensorFlow to avoid memory issues
 gpus = tf.config.experimental.list_physical_devices('GPU')
@@ -37,13 +43,12 @@ if gpus:
 
 # Create Flask app
 app = Flask(__name__)
+CORS(app)  # Enable CORS for all routes
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'development-key')
 app.config['UPLOAD_FOLDER'] = os.path.join(os.getcwd(), 'static', 'uploads')
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024  # 16MB max upload
 
-# Ensure upload directory exists
-os.makedirs(app.config['UPLOAD_FOLDER'], exist_ok=True)
-logger.info(f"Created upload folder at {app.config['UPLOAD_FOLDER']}")
+logger.info(f"Upload folder path: {app.config['UPLOAD_FOLDER']}")
 
 # Global variables
 MODEL = None
@@ -55,6 +60,7 @@ def load_model():
     try:
         # Adjust path according to your model location
         model_path = os.path.join(os.getcwd(), 'models', 'pest_detection_model.h5')
+        logger.info(f"Attempting to load model from: {model_path}")
         if os.path.exists(model_path):
             MODEL = tf.keras.models.load_model(model_path)
             logger.info("Model loaded successfully!")
@@ -68,6 +74,7 @@ def load_model():
             logger.info("Created placeholder model for testing")
     except Exception as e:
         logger.error(f"Error loading model: {e}")
+        logger.error(traceback.format_exc())
         return False
     return True
 
@@ -125,68 +132,73 @@ def index():
 
 @app.route('/upload', methods=['POST'])
 def upload_file():
-    logger.info("Upload endpoint called")
-    if 'file' not in request.files:
-        logger.warning("No file part in request")
-        flash('No file part')
-        return redirect(request.url)
+    logger.info("Upload endpoint called with request method: %s", request.method)
+    logger.info("Request headers: %s", dict(request.headers))
+    logger.info("Files in request: %s", list(request.files.keys()) if request.files else "None")
     
-    file = request.files['file']
+    try:
+        if 'file' not in request.files:
+            logger.warning("No file part in request")
+            return jsonify({'error': 'No file part'}), 400
+        
+        file = request.files['file']
+        
+        if file.filename == '':
+            logger.warning("No selected file")
+            return jsonify({'error': 'No selected file'}), 400
+        
+        if file and allowed_file(file.filename):
+            filename = secure_filename(file.filename)
+            file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+            logger.info(f"Saving file to {file_path}")
+            file.save(file_path)
+            logger.info(f"Saved file to {file_path}")
+            
+            # Process the audio file
+            features, error = preprocess_audio(file_path)
+            
+            if error:
+                logger.error(f"Error during preprocessing: {error}")
+                return jsonify({'error': error}), 400
+            
+            # Make prediction
+            try:
+                logger.info("Making prediction")
+                predictions = MODEL.predict(np.expand_dims(features, axis=0))[0]
+                
+                # Get top 3 predictions
+                top_indices = predictions.argsort()[-3:][::-1]
+                top_pests = [CLASS_NAMES[i] for i in top_indices]
+                top_scores = [float(predictions[i]) for i in top_indices]
+                
+                logger.info(f"Prediction result: {CLASS_NAMES[np.argmax(predictions)]}")
+                
+                result = {
+                    'prediction': {
+                        'class': CLASS_NAMES[np.argmax(predictions)],
+                        'confidence': float(np.max(predictions))
+                    },
+                    'top_3': [
+                        {'class': pest, 'confidence': score} 
+                        for pest, score in zip(top_pests, top_scores)
+                    ],
+                    'audio_file': url_for('static', filename=f'uploads/{filename}')
+                }
+                
+                return jsonify(result)
+            
+            except Exception as e:
+                logger.error(f"Prediction error: {str(e)}")
+                logger.error(traceback.format_exc())
+                return jsonify({'error': f"Prediction error: {str(e)}"}), 500
+        
+        logger.warning("Invalid file type")
+        return jsonify({'error': 'Invalid file type. Please upload WAV, MP3, OGG, or FLAC files.'}), 400
     
-    if file.filename == '':
-        logger.warning("No selected file")
-        flash('No selected file')
-        return redirect(request.url)
-    
-    if file and allowed_file(file.filename):
-        filename = secure_filename(file.filename)
-        file_path = os.path.join(app.config['UPLOAD_FOLDER'], filename)
-        file.save(file_path)
-        logger.info(f"Saved file to {file_path}")
-        
-        # Process the audio file
-        features, error = preprocess_audio(file_path)
-        
-        if error:
-            logger.error(f"Error during preprocessing: {error}")
-            return jsonify({'error': error})
-        
-        # Make prediction
-        try:
-            logger.info("Making prediction")
-            predictions = MODEL.predict(np.expand_dims(features, axis=0))[0]
-            
-            # Get top 3 predictions
-            top_indices = predictions.argsort()[-3:][::-1]
-            top_pests = [CLASS_NAMES[i] for i in top_indices]
-            top_scores = [float(predictions[i]) for i in top_indices]
-            
-            logger.info(f"Prediction result: {CLASS_NAMES[np.argmax(predictions)]}")
-            
-            result = {
-                'prediction': {
-                    'class': CLASS_NAMES[np.argmax(predictions)],
-                    'confidence': float(np.max(predictions))
-                },
-                'top_3': [
-                    {'class': pest, 'confidence': score} 
-                    for pest, score in zip(top_pests, top_scores)
-                ]
-            }
-            
-            return render_template(
-                'result.html',
-                audio_file=url_for('static', filename=f'uploads/{filename}'),
-                result=result
-            )
-        
-        except Exception as e:
-            logger.error(f"Prediction error: {str(e)}")
-            logger.error(traceback.format_exc())
-            return jsonify({'error': f"Prediction error: {str(e)}"})
-    
-    flash('Invalid file type. Please upload WAV, MP3, OGG, or FLAC files.')
-    return redirect(url_for('index'))
+    except Exception as e:
+        logger.error(f"Unexpected error in upload_file: {str(e)}")
+        logger.error(traceback.format_exc())
+        return jsonify({'error': f"Server error: {str(e)}"}), 500
 
 @app.route('/api/predict', methods=['POST'])
 def api_predict():
@@ -245,6 +257,11 @@ def api_predict():
 # Health check endpoint for Render
 @app.route('/health')
 def health():
+    logger.info("Health check endpoint called")
+    # Log environment info without sensitive data
+    env_info = {k: v for k, v in os.environ.items() 
+               if not k.startswith('AWS') and 'KEY' not in k.upper() and 'SECRET' not in k.upper()}
+    logger.info(f"Environment variables: {env_info}")
     return jsonify({"status": "healthy"})
 
 # Initial model loading
